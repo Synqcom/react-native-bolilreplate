@@ -18,8 +18,9 @@ import { OptimizedFormikBaseInput } from 'app/components/ui-components/inputs/Op
 import { GlobalConstants } from 'app/config/global-constants';
 import { Text } from 'react-native';
 import messages from './messages';
-import { setLocalize } from 'app/store/configureStore';
+import { setLocalize, setNotification } from 'app/store/configureStore';
 import { makeSelectLocaleSelector } from 'app/store/selectors';
+import { biometryAvailable, biometryPrompt } from 'app/utils/biometry/biometrics';
 
 const LoginPage: React.FC = () => {
   const dispatch = useDispatch();
@@ -44,6 +45,41 @@ const LoginPage: React.FC = () => {
   const { values, handleChange, handleSubmit } = authUserFormikData;
 
   const onForgot = () => NavigationService.navigate('ForgotPassword');
+  const onBiometryEnter = async () => {
+    //не использовать isSensorAvailable на боевом!!! использовать createSignature при работающем бэке
+    const authenticateParams = {
+      promptMessage: 'Вход в приложение',
+      cancelButtonText: 'Отменить и закрыть фингерпринт',
+      code: '',
+    };
+
+    const { available } = await biometryAvailable();
+
+    if (available) {
+      const { successPrompt } = await biometryPrompt(authenticateParams);
+
+      if (successPrompt) {
+        dispatch(
+          loginUserRequest({
+            values: {
+              username: 'admin',
+              password: 'admin',
+            },
+            NavigationService: NavigationService,
+          }),
+        );
+      }
+    } else {
+      dispatch(
+        setNotification({
+          notificationTitle: 'Ошибка! У Вас нет ниодного настроенного отпечатка пальца',
+          notificationMessage:
+            'Настройте хотя бы 1 отпечаток и повторите снова или войдите через форму',
+          notificationStatus: 'error-status',
+        }),
+      );
+    }
+  };
   const onChangeLanguage = () =>
     dispatch(setLocalize({ language: language === 'ru' ? 'en' : 'ru' }));
 
@@ -90,7 +126,7 @@ const LoginPage: React.FC = () => {
         />
       </Box>
 
-      <Box style={{ marginBottom: 30 }}>
+      <Box style={{ marginBottom: 1 }}>
         <Typography text="Password" style={typographyStyles.black} />
 
         <BaseInput
@@ -115,7 +151,14 @@ const LoginPage: React.FC = () => {
         style={loginStyles.forgot}
         labelStyle={loginStyles.labelStyle}
         onPress={onForgot}
-        btnText="Forgot Password"
+        btnText="Forgot Password QR ENTER"
+      />
+      <BaseButton
+        mode="text"
+        style={loginStyles.forgot}
+        labelStyle={loginStyles.labelStyle}
+        onPress={onBiometryEnter}
+        btnText="Biometry test"
       />
 
       <BaseButton

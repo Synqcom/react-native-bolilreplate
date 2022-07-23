@@ -124,6 +124,14 @@
 
 
 - биометрия
+  - https://www.npmjs.com/package/react-native-biometrics
+  - файлы из проекта турон лежат в архиве с коментами, ниже лежат пути их использования
+    src/modules/SecuritySettingsModule/screens/SecuritySettingsScreen/components/SettingsForm/index.tsx
+    src/modules/CardsModule/CardsMainScreen/index.tsx
+    src/modules/UserProfileModule/screens/ProfileSecurityScreen/index.tsx
+    src/redux/security/thunks.ts
+    src/sharedComponent/Pincode/index.tsx
+    src/utils/helpers/functions/biometrics.ts
 
 
 - +избавиться от colvir в package-lock.json и приложении, что мешает установки пакетов без VPN
